@@ -1,0 +1,7 @@
+bin/
+obj/
+.vs/
+*.user
+
+# Секрет OAuth-клієнта Google — не викладати у відкритий доступ
+credentials.json

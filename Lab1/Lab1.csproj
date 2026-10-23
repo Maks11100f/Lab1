@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<!-- Застосунок орієнтований на Windows (вхід у Google відкривається у браузері комп'ютера) -->
+		<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+		<OutputType>Exe</OutputType>
+		<RootNamespace>Lab1</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<ApplicationTitle>Lab1 Spreadsheet</ApplicationTitle>
+		<ApplicationId>com.lab1.spreadsheet</ApplicationId>
+		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<ApplicationVersion>1</ApplicationVersion>
+
+		<!-- Запуск без MSIX-пакування -->
+		<WindowsPackageType>None</WindowsPackageType>
+
+		<SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#1F6E43" />
+		<!-- Сюди кладеться credentials.json для Google Drive (див. README.md) -->
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<PackageReference Include="Google.Apis.Drive.v3" Version="1.*" />
+	</ItemGroup>
+
+</Project>
