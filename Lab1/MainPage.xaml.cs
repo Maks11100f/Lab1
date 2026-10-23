@@ -31,6 +31,7 @@ public partial class MainPage : ContentPage
     private int selectedRow;
     private int selectedColumn;
     private bool showExpressions;          // false — режим ЗНАЧЕННЯ, true — режим ВИРАЗ
+    private CellEntry? editingEntry;       // клітинка, яку зараз редагують (у ній показано вираз)
     private string fileName = "table1";
 
     public MainPage()
@@ -50,6 +51,7 @@ public partial class MainPage : ContentPage
     /// <summary>Створює заголовки та поля введення для всіх клітинок.</summary>
     private void BuildGrid()
     {
+        editingEntry = null;
         TableGrid.Children.Clear();
         TableGrid.RowDefinitions.Clear();
         TableGrid.ColumnDefinitions.Clear();
@@ -126,9 +128,15 @@ public partial class MainPage : ContentPage
             BackgroundColor = Colors.Transparent    // фон дає рамка-контейнер клітинки
         };
 
-        entry.Focused += (sender, e) => SelectCell(row, column);
-        entry.Completed += (sender, e) => CommitCellEntry(entry, row, column);
-        entry.Unfocused += (sender, e) => CommitCellEntry(entry, row, column);
+        entry.Focused += (sender, e) => BeginCellEdit(entry, row, column);
+        entry.Unfocused += (sender, e) => EndCellEdit(entry, row, column);
+        entry.Completed += (sender, e) => CellEntry_Completed(entry, row, column);
+        entry.TextChanged += (sender, e) =>
+        {
+            // Поки клітинку редагують, рядок виразу над таблицею показує те саме
+            if (entry == editingEntry)
+                FormulaEntry.Text = e.NewTextValue;
+        };
         return entry;
     }
 
@@ -136,19 +144,25 @@ public partial class MainPage : ContentPage
     private void RefreshCells()
     {
         for (int r = 0; r < table.RowCount; r++)
-        {
             for (int c = 0; c < table.ColumnCount; c++)
-            {
-                TableCell cell = table.GetCell(r, c);
-                CellEntry entry = cellEntries[r, c];
+                ShowCell(r, c);
+    }
 
-                entry.Text = showExpressions ? cell.Expression : cell.ValueText;
-                entry.IsReadOnly = !showExpressions;
-                entry.TextColor = cell.HasError ? Palette.ErrorText : Palette.CellText;
-                // Як в Excel: значення вирівняні праворуч, вирази — ліворуч
-                entry.HorizontalTextAlignment = showExpressions ? TextAlignment.Start : TextAlignment.End;
-            }
-        }
+    /// <summary>
+    /// Показує одну клітинку: у режимі ВИРАЗ і під час редагування — вираз,
+    /// у режимі ЗНАЧЕННЯ — обчислене значення.
+    /// </summary>
+    private void ShowCell(int row, int column)
+    {
+        TableCell cell = table.GetCell(row, column);
+        CellEntry entry = cellEntries[row, column];
+        bool editing = entry == editingEntry;
+        bool expression = showExpressions || editing;
+
+        entry.Text = expression ? cell.Expression : cell.ValueText;
+        entry.TextColor = cell.HasError && !editing ? Palette.ErrorText : Palette.CellText;
+        // Як в Excel: значення вирівняні праворуч, вирази — ліворуч
+        entry.HorizontalTextAlignment = expression ? TextAlignment.Start : TextAlignment.End;
     }
 
     /// <summary>Показує або прибирає виділення клітинки (рамка + підсвічені заголовки рядка і стовпчика).</summary>
@@ -197,21 +211,55 @@ public partial class MainPage : ContentPage
             StatusLabel.Text = $"{name} = {cell.Value}   (вираз: {cell.Expression})";
     }
 
-    /// <summary>Введення виразу прямо в клітинці (лише в режимі ВИРАЗ).</summary>
-    private void CommitCellEntry(Entry entry, int row, int column)
+    // Введення прямо в клітинці (в обох режимах), як в Excel:
+    // клік по клітинці — у ній з'являється вираз для редагування;
+    // Enter — зберегти й перейти на клітинку нижче, Tab або клік деінде — зберегти.
+
+    /// <summary>Чи це поле досі належить таблиці (таблицю могли перебудувати, змінивши розмір).</summary>
+    private bool IsCurrentCellEntry(CellEntry entry, int row, int column) =>
+        row < table.RowCount && column < table.ColumnCount && cellEntries[row, column] == entry;
+
+    private void BeginCellEdit(CellEntry entry, int row, int column)
     {
-        if (!showExpressions)
+        if (!IsCurrentCellEntry(entry, row, column))
             return;
 
-        // Таблицю могли перебудувати (змінили розмір) — тоді це поле вже не актуальне
-        if (row >= table.RowCount || column >= table.ColumnCount || cellEntries[row, column] != entry)
+        SelectCell(row, column);
+        editingEntry = entry;
+        ShowCell(row, column);                              // замість значення — вираз
+        entry.CursorPosition = entry.Text?.Length ?? 0;     // курсор у кінець виразу
+    }
+
+    private void EndCellEdit(CellEntry entry, int row, int column)
+    {
+        // Зберігаємо лише клітинку, яку справді редагували
+        // (інакше показане значення, наприклад «1024», могло б перезаписати вираз «2^10»)
+        if (entry != editingEntry || !IsCurrentCellEntry(entry, row, column))
             return;
 
+        editingEntry = null;
         string text = (entry.Text ?? "").Trim();
-        if (text == table.GetExpression(row, column))
+        if (text != table.GetExpression(row, column))
+            ChangeExpression(row, column, text);   // перерахує таблицю й оновить усі клітинки
+        else
+            ShowCell(row, column);                 // нічого не змінили — знову показуємо як зазвичай
+    }
+
+    private void CellEntry_Completed(CellEntry entry, int row, int column)
+    {
+        EndCellEdit(entry, row, column);
+        if (!IsCurrentCellEntry(entry, row, column))
             return;
 
-        ChangeExpression(row, column, text);
+        if (row + 1 < table.RowCount)
+        {
+            CellEntry next = cellEntries[row + 1, column];
+            Dispatcher.Dispatch(() => next.Focus());       // перехід на клітинку нижче
+        }
+        else
+        {
+            BeginCellEdit(entry, row, column);             // останній рядок — лишаємось у клітинці
+        }
     }
 
     /// <summary>Введення виразу в рядку над таблицею (працює в обох режимах).</summary>
@@ -245,7 +293,7 @@ public partial class MainPage : ContentPage
         UpdateModeButtons();
         RefreshCells();
         StatusLabel.Text = showExpressions
-            ? "Режим ВИРАЗ: у клітинках показано вирази, їх можна редагувати."
+            ? "Режим ВИРАЗ: у клітинках показано вирази."
             : "Режим ЗНАЧЕННЯ: у клітинках показано обчислені значення.";
     }
 
@@ -542,8 +590,9 @@ public partial class MainPage : ContentPage
     {
         const string help =
             "ЯК КОРИСТУВАТИСЯ\n" +
-            "• Виберіть клітинку і введіть вираз у рядку над таблицею, потім Enter або «Застосувати вираз».\n" +
-            "• У режимі ВИРАЗ можна писати вирази прямо в клітинках.\n" +
+            "• Клацніть клітинку і вводьте вираз прямо в ній (у будь-якому режимі): " +
+            "Enter — зберегти й перейти на клітинку нижче, Tab — праворуч.\n" +
+            "• Довгі вирази зручно редагувати в рядку над таблицею (Enter або «Застосувати вираз»).\n" +
             "• «Показувати: Значення / Вирази» перемикає режим відображення таблиці.\n" +
             "• «Тема: Світла / Темна» змінює оформлення програми (вибір запам'ятовується).\n" +
             "• Група «Таблиця» — зміна кількості рядків і стовпчиків, група «Файл» — " +

@@ -57,7 +57,7 @@
                         <Button x:Name="ValuesModeButton" Text="Значення" Clicked="ValuesMode_Clicked" Style="{StaticResource ToggleButton}"
                                 ToolTipProperties.Text="Режим ЗНАЧЕННЯ: у клітинках показуються обчислені значення" />
                         <Button x:Name="ExpressionsModeButton" Text="Вирази" Clicked="ExpressionsMode_Clicked" Style="{StaticResource ToggleButton}"
-                                ToolTipProperties.Text="Режим ВИРАЗ: у клітинках показуються вирази, їх можна редагувати" />
+                                ToolTipProperties.Text="Режим ВИРАЗ: у клітинках показуються вирази" />
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Border>
