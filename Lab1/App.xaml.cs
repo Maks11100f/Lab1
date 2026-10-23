@@ -1,3 +1,5 @@
+using Lab1.Services;
+
 namespace Lab1;
 
 public partial class App : Application
@@ -5,7 +7,7 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
-        UserAppTheme = AppTheme.Light;
+        UserAppTheme = ThemeService.LoadSavedTheme();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)

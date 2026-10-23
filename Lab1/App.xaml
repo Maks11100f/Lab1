@@ -1,16 +1,132 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Lab1"
              x:Class="Lab1.App">
+    <!-- Кольори для світлої та темної теми задані в Palette.cs -->
     <Application.Resources>
         <ResourceDictionary>
+
+            <!-- Звичайна кнопка — бурштинова -->
             <Style TargetType="Button">
-                <Setter Property="BackgroundColor" Value="#1F6E43" />
-                <Setter Property="TextColor" Value="White" />
+                <Setter Property="TextColor" Value="{x:Static local:Palette.OnPrimary}" />
                 <Setter Property="Padding" Value="12,6" />
                 <Setter Property="Margin" Value="3" />
                 <Setter Property="CornerRadius" Value="4" />
                 <Setter Property="FontSize" Value="13" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.PrimaryLight}, Dark={x:Static local:Palette.PrimaryDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.PrimaryHoverLight}, Dark={x:Static local:Palette.PrimaryHoverDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.PrimaryPressedLight}, Dark={x:Static local:Palette.PrimaryPressedDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.DisabledLight}, Dark={x:Static local:Palette.DisabledDark}}" />
+                                    <Setter Property="TextColor" Value="{AppThemeBinding Light={x:Static local:Palette.DisabledTextLight}, Dark={x:Static local:Palette.DisabledTextDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <!-- Кнопки Google Drive — теплий помаранчевий -->
+            <Style x:Key="DriveButton" TargetType="Button">
+                <Setter Property="TextColor" Value="{x:Static local:Palette.OnPrimary}" />
+                <Setter Property="Padding" Value="12,6" />
+                <Setter Property="Margin" Value="3" />
+                <Setter Property="CornerRadius" Value="4" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.DriveLight}, Dark={x:Static local:Palette.DriveDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.DriveHoverLight}, Dark={x:Static local:Palette.DriveHoverDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.DrivePressedLight}, Dark={x:Static local:Palette.DrivePressedDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.DisabledLight}, Dark={x:Static local:Palette.DisabledDark}}" />
+                                    <Setter Property="TextColor" Value="{AppThemeBinding Light={x:Static local:Palette.DisabledTextLight}, Dark={x:Static local:Palette.DisabledTextDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <!-- Другорядні кнопки (довідка, вихід з акаунта) -->
+            <Style x:Key="SecondaryButton" TargetType="Button">
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={x:Static local:Palette.TextLight}, Dark={x:Static local:Palette.TextDark}}" />
+                <Setter Property="Padding" Value="12,6" />
+                <Setter Property="Margin" Value="3" />
+                <Setter Property="CornerRadius" Value="4" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.SecondaryLight}, Dark={x:Static local:Palette.SecondaryDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.SecondaryHoverLight}, Dark={x:Static local:Palette.SecondaryHoverDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.SecondaryPressedLight}, Dark={x:Static local:Palette.SecondaryPressedDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.DisabledLight}, Dark={x:Static local:Palette.DisabledDark}}" />
+                                    <Setter Property="TextColor" Value="{AppThemeBinding Light={x:Static local:Palette.DisabledTextLight}, Dark={x:Static local:Palette.DisabledTextDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <!-- Половинки перемикачів «Значення | Вирази» і «Світла | Темна»:
+                 колір задається з коду залежно від того, яка половинка активна -->
+            <Style x:Key="ToggleButton" TargetType="Button">
+                <Setter Property="Padding" Value="12,6" />
+                <Setter Property="Margin" Value="3" />
+                <Setter Property="CornerRadius" Value="4" />
+                <Setter Property="FontSize" Value="13" />
+            </Style>
+
+            <!-- Підписи за замовчуванням -->
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={x:Static local:Palette.TextLight}, Dark={x:Static local:Palette.TextDark}}" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>

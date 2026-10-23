@@ -13,16 +13,7 @@ public partial class MainPage : ContentPage
     private const int DefaultRows = 10;
     private const int DefaultColumns = 6;
 
-    // Кольори таблиці (у стилі Excel: світло-сірі заголовки, зелена рамка вибраної клітинки)
-    private static readonly Color HeaderColor = Color.FromArgb("#F3F3F3");
-    private static readonly Color HeaderTextColor = Color.FromArgb("#333333");
-    private static readonly Color SelectedHeaderColor = Color.FromArgb("#D2E6D9");
-    private static readonly Color SelectedHeaderTextColor = Color.FromArgb("#1F6E43");
-    private static readonly Color CellColor = Colors.White;
-    private static readonly Color SelectionBorderColor = Color.FromArgb("#1F6E43");
-    private static readonly Color ErrorTextColor = Color.FromArgb("#C62828");
-    private static readonly Color ActiveModeColor = Color.FromArgb("#B26A00");
-    private static readonly Color InactiveModeColor = Color.FromArgb("#E8E8E8");
+    // Кольори для світлої та темної теми — у класі Palette (Palette.cs)
 
     /// <summary>Поточна сторінка (потрібна для питання при закритті вікна).</summary>
     public static MainPage? Current { get; private set; }
@@ -49,6 +40,7 @@ public partial class MainPage : ContentPage
         BuildGrid();
         SelectCell(0, 0);
         UpdateModeButtons();
+        UpdateThemeButtons();
     }
 
     // =====================================================================
@@ -98,7 +90,7 @@ public partial class MainPage : ContentPage
                     StrokeShape = new Microsoft.Maui.Controls.Shapes.Rectangle(),
                     StrokeThickness = 2,
                     Stroke = Colors.Transparent,
-                    BackgroundColor = CellColor,
+                    BackgroundColor = Palette.CellBackground,
                     Padding = 0,
                     Content = entry
                 };
@@ -118,8 +110,8 @@ public partial class MainPage : ContentPage
         {
             Text = text,
             FontAttributes = FontAttributes.Bold,
-            BackgroundColor = HeaderColor,
-            TextColor = HeaderTextColor,
+            BackgroundColor = Palette.HeaderBackground,
+            TextColor = Palette.HeaderText,
             HorizontalTextAlignment = TextAlignment.Center,
             VerticalTextAlignment = TextAlignment.Center,
             Padding = new Thickness(4, 6)
@@ -152,7 +144,7 @@ public partial class MainPage : ContentPage
 
                 entry.Text = showExpressions ? cell.Expression : cell.ValueText;
                 entry.IsReadOnly = !showExpressions;
-                entry.TextColor = cell.HasError ? ErrorTextColor : Colors.Black;
+                entry.TextColor = cell.HasError ? Palette.ErrorText : Palette.CellText;
                 // Як в Excel: значення вирівняні праворуч, вирази — ліворуч
                 entry.HorizontalTextAlignment = showExpressions ? TextAlignment.Start : TextAlignment.End;
             }
@@ -165,12 +157,12 @@ public partial class MainPage : ContentPage
         if (row >= table.RowCount || column >= table.ColumnCount)
             return;
 
-        cellBorders[row, column].Stroke = selected ? SelectionBorderColor : Colors.Transparent;
+        cellBorders[row, column].Stroke = selected ? Palette.SelectionBorder : Colors.Transparent;
 
         foreach (Label header in new[] { rowHeaders[row], columnHeaders[column] })
         {
-            header.BackgroundColor = selected ? SelectedHeaderColor : HeaderColor;
-            header.TextColor = selected ? SelectedHeaderTextColor : HeaderTextColor;
+            header.BackgroundColor = selected ? Palette.SelectedHeaderBackground : Palette.HeaderBackground;
+            header.TextColor = selected ? Palette.SelectedHeaderText : Palette.HeaderText;
         }
     }
 
@@ -260,10 +252,47 @@ public partial class MainPage : ContentPage
     /// <summary>Підсвічує кнопку поточного режиму.</summary>
     private void UpdateModeButtons()
     {
-        ValuesModeButton.BackgroundColor = showExpressions ? InactiveModeColor : ActiveModeColor;
-        ValuesModeButton.TextColor = showExpressions ? Colors.Black : Colors.White;
-        ExpressionsModeButton.BackgroundColor = showExpressions ? ActiveModeColor : InactiveModeColor;
-        ExpressionsModeButton.TextColor = showExpressions ? Colors.White : Colors.Black;
+        SetToggleState(ValuesModeButton, !showExpressions);
+        SetToggleState(ExpressionsModeButton, showExpressions);
+    }
+
+    /// <summary>Вигляд половинки перемикача: активна — бурштинова, неактивна — приглушена.</summary>
+    private static void SetToggleState(Button button, bool active)
+    {
+        button.BackgroundColor = active ? Palette.Primary : Palette.Secondary;
+        button.TextColor = active ? Palette.OnPrimary : Palette.Text;
+        button.FontAttributes = active ? FontAttributes.Bold : FontAttributes.None;
+    }
+
+    // =====================================================================
+    //  Тема оформлення
+    // =====================================================================
+
+    private void LightTheme_Clicked(object? sender, EventArgs e) => SetTheme(AppTheme.Light);
+
+    private void DarkTheme_Clicked(object? sender, EventArgs e) => SetTheme(AppTheme.Dark);
+
+    private void SetTheme(AppTheme theme)
+    {
+        if (Palette.IsDark == (theme == AppTheme.Dark))
+            return;
+
+        ThemeService.Apply(theme);   // елементи з XAML перефарбуються самі (AppThemeBinding)
+
+        // Клітинки й заголовки створено в коді — перефарбовуємо їх, зберігаючи вибрану клітинку
+        int row = selectedRow;
+        int column = selectedColumn;
+        BuildGrid();
+        SelectCell(row, column);
+        UpdateModeButtons();
+        UpdateThemeButtons();
+        StatusLabel.Text = theme == AppTheme.Dark ? "Увімкнено темну тему." : "Увімкнено світлу тему.";
+    }
+
+    private void UpdateThemeButtons()
+    {
+        SetToggleState(LightThemeButton, !Palette.IsDark);
+        SetToggleState(DarkThemeButton, Palette.IsDark);
     }
 
     // =====================================================================
@@ -524,6 +553,7 @@ public partial class MainPage : ContentPage
             "• Виберіть клітинку і введіть вираз у рядку над таблицею, потім Enter або «Застосувати вираз».\n" +
             "• У режимі ВИРАЗ можна писати вирази прямо в клітинках.\n" +
             "• «Показувати: Значення / Вирази» перемикає режим відображення таблиці.\n" +
+            "• «Тема: Світла / Темна» змінює оформлення програми (вибір запам'ятовується).\n" +
             "• Група «Таблиця» — зміна кількості рядків і стовпчиків, група «Файл» — " +
             "створення, відкриття та збереження таблиць (на комп'ютері або на Google Drive).\n" +
             "• Помилкові клітинки показують #ПОМИЛКА, опис помилки — у рядку стану внизу.\n\n" +

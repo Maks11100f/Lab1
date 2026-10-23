@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Lab1"
              x:Class="Lab1.MainPage"
-             BackgroundColor="White">
+             BackgroundColor="{AppThemeBinding Light={x:Static local:Palette.PageLight}, Dark={x:Static local:Palette.PageDark}}">
 
     <ContentPage.Resources>
         <!-- Рамка навколо групи кнопок -->
         <Style x:Key="GroupBorder" TargetType="Border">
-            <Setter Property="Stroke" Value="#C8C8C8" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light={x:Static local:Palette.PanelBorderLight}, Dark={x:Static local:Palette.PanelBorderDark}}" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={x:Static local:Palette.PanelLight}, Dark={x:Static local:Palette.PanelDark}}" />
             <Setter Property="StrokeThickness" Value="1" />
             <Setter Property="StrokeShape" Value="RoundRectangle 6" />
             <Setter Property="Padding" Value="6,2,6,4" />
@@ -18,21 +20,21 @@
         <Style x:Key="GroupCaption" TargetType="Label">
             <Setter Property="FontSize" Value="11" />
             <Setter Property="FontAttributes" Value="Bold" />
-            <Setter Property="TextColor" Value="#5F6368" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={x:Static local:Palette.MutedTextLight}, Dark={x:Static local:Palette.MutedTextDark}}" />
             <Setter Property="Margin" Value="3,2,0,0" />
         </Style>
 
         <!-- Вертикальна риска між підгрупами -->
         <Style x:Key="GroupSeparator" TargetType="BoxView">
             <Setter Property="WidthRequest" Value="1" />
-            <Setter Property="Color" Value="#C8C8C8" />
+            <Setter Property="Color" Value="{AppThemeBinding Light={x:Static local:Palette.PanelBorderLight}, Dark={x:Static local:Palette.PanelBorderDark}}" />
             <Setter Property="Margin" Value="6,4" />
         </Style>
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="10" RowSpacing="8">
 
-        <!-- Панель кнопок: три групи — «Таблиця», «Файл», «Довідка» -->
+        <!-- Панель кнопок: групи «Таблиця», «Файл», «Вигляд», «Довідка» -->
         <FlexLayout x:Name="ButtonsPanel" Grid.Row="0" Wrap="Wrap" AlignItems="Start">
 
             <!-- ТАБЛИЦЯ: розмір і режим відображення -->
@@ -51,10 +53,10 @@
 
                         <BoxView Style="{StaticResource GroupSeparator}" />
 
-                        <Label Text="Показувати:" VerticalOptions="Center" Margin="3,0" TextColor="#333333" />
-                        <Button x:Name="ValuesModeButton" Text="Значення" Clicked="ValuesMode_Clicked"
+                        <Label Text="Показувати:" VerticalOptions="Center" Margin="3,0" />
+                        <Button x:Name="ValuesModeButton" Text="Значення" Clicked="ValuesMode_Clicked" Style="{StaticResource ToggleButton}"
                                 ToolTipProperties.Text="Режим ЗНАЧЕННЯ: у клітинках показуються обчислені значення" />
-                        <Button x:Name="ExpressionsModeButton" Text="Вирази" Clicked="ExpressionsMode_Clicked"
+                        <Button x:Name="ExpressionsModeButton" Text="Вирази" Clicked="ExpressionsMode_Clicked" Style="{StaticResource ToggleButton}"
                                 ToolTipProperties.Text="Режим ВИРАЗ: у клітинках показуються вирази, їх можна редагувати" />
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
@@ -74,12 +76,26 @@
 
                         <BoxView Style="{StaticResource GroupSeparator}" />
 
-                        <Button Text="Відкрити з Google Drive" Clicked="OpenDrive_Clicked" BackgroundColor="#1A73E8"
+                        <Button Text="Відкрити з Google Drive" Clicked="OpenDrive_Clicked" Style="{StaticResource DriveButton}"
                                 ToolTipProperties.Text="Відкрити таблицю, раніше збережену цією програмою на Google Drive" />
-                        <Button Text="Зберегти на Google Drive" Clicked="SaveDrive_Clicked" BackgroundColor="#1A73E8"
+                        <Button Text="Зберегти на Google Drive" Clicked="SaveDrive_Clicked" Style="{StaticResource DriveButton}"
                                 ToolTipProperties.Text="Зберегти таблицю на ваш Google Drive" />
-                        <Button Text="Вийти з Google-акаунта" Clicked="SignOut_Clicked" BackgroundColor="#5F6368"
+                        <Button Text="Вийти з Google-акаунта" Clicked="SignOut_Clicked" Style="{StaticResource SecondaryButton}"
                                 ToolTipProperties.Text="Забути збережений вхід у Google-акаунт" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ВИГЛЯД: світла / темна тема -->
+            <Border Style="{StaticResource GroupBorder}">
+                <VerticalStackLayout>
+                    <Label Text="ВИГЛЯД" Style="{StaticResource GroupCaption}" />
+                    <HorizontalStackLayout>
+                        <Label Text="Тема:" VerticalOptions="Center" Margin="3,0" />
+                        <Button x:Name="LightThemeButton" Text="Світла" Clicked="LightTheme_Clicked" Style="{StaticResource ToggleButton}"
+                                ToolTipProperties.Text="Світле оформлення програми" />
+                        <Button x:Name="DarkThemeButton" Text="Темна" Clicked="DarkTheme_Clicked" Style="{StaticResource ToggleButton}"
+                                ToolTipProperties.Text="Темне оформлення програми" />
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Border>
@@ -89,9 +105,9 @@
                 <VerticalStackLayout>
                     <Label Text="ДОВІДКА" Style="{StaticResource GroupCaption}" />
                     <HorizontalStackLayout>
-                        <Button Text="Як користуватися" Clicked="Help_Clicked" BackgroundColor="#5F6368"
+                        <Button Text="Як користуватися" Clicked="Help_Clicked" Style="{StaticResource SecondaryButton}"
                                 ToolTipProperties.Text="Як вводити вирази, які операції підтримуються, приклади" />
-                        <Button Text="Про програму" Clicked="About_Clicked" BackgroundColor="#5F6368"
+                        <Button Text="Про програму" Clicked="About_Clicked" Style="{StaticResource SecondaryButton}"
                                 ToolTipProperties.Text="Коротка інформація про програму" />
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
@@ -101,7 +117,7 @@
         <!-- Рядок виразу вибраної клітинки -->
         <Grid Grid.Row="1" ColumnDefinitions="70,*,Auto" ColumnSpacing="6">
             <Label x:Name="CellNameLabel" Text="A1" FontSize="16" FontAttributes="Bold"
-                   HorizontalOptions="Center" VerticalOptions="Center" TextColor="#1F6E43"
+                   HorizontalOptions="Center" VerticalOptions="Center" TextColor="{AppThemeBinding Light={x:Static local:Palette.AccentLight}, Dark={x:Static local:Palette.AccentDark}}"
                    ToolTipProperties.Text="Вибрана клітинка" />
             <Entry x:Name="FormulaEntry" Grid.Column="1"
                    Placeholder="Вираз для вибраної клітинки, наприклад: (A1 > 2^10) and not (B2 = 0)"
@@ -112,16 +128,16 @@
 
         <!-- Сама таблиця (заповнюється з коду) -->
         <ScrollView Grid.Row="2" Orientation="Both">
-            <Grid x:Name="TableGrid" ColumnSpacing="1" RowSpacing="1" BackgroundColor="#C8C8C8"
+            <Grid x:Name="TableGrid" ColumnSpacing="1" RowSpacing="1" BackgroundColor="{AppThemeBinding Light={x:Static local:Palette.GridLinesLight}, Dark={x:Static local:Palette.GridLinesDark}}"
                   HorizontalOptions="Start" VerticalOptions="Start" />
         </ScrollView>
 
         <!-- Рядок стану -->
         <Grid Grid.Row="3" ColumnDefinitions="Auto,*" ColumnSpacing="8">
             <ActivityIndicator x:Name="BusyIndicator" IsRunning="False" IsVisible="False"
-                               WidthRequest="20" HeightRequest="20" Color="#1A73E8" />
+                               WidthRequest="20" HeightRequest="20" Color="{AppThemeBinding Light={x:Static local:Palette.AccentLight}, Dark={x:Static local:Palette.AccentDark}}" />
             <Label x:Name="StatusLabel" Grid.Column="1" VerticalOptions="Center"
-                   LineBreakMode="WordWrap" TextColor="#333333" />
+                   LineBreakMode="WordWrap" TextColor="{AppThemeBinding Light={x:Static local:Palette.MutedTextLight}, Dark={x:Static local:Palette.MutedTextDark}}" />
         </Grid>
     </Grid>
 </ContentPage>
