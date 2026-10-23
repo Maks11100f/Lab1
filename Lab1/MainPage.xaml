@@ -70,7 +70,7 @@
                         <Button Text="Нова таблиця" Clicked="New_Clicked"
                                 ToolTipProperties.Text="Створити нову порожню таблицю" />
                         <Button Text="Відкрити з комп'ютера" Clicked="OpenLocal_Clicked"
-                                ToolTipProperties.Text="Відкрити таблицю з папки Документи\Lab1Tables" />
+                                ToolTipProperties.Text="Вибрати файл таблиці (.json) у будь-якій папці комп'ютера" />
                         <Button Text="Зберегти на комп'ютер" Clicked="SaveLocal_Clicked"
                                 ToolTipProperties.Text="Зберегти таблицю в папку Документи\Lab1Tables" />
 

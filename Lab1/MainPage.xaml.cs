@@ -408,21 +408,14 @@ public partial class MainPage : ContentPage
         if (!await ConfirmDiscardChangesAsync())
             return;
 
-        List<string> names = localFiles.GetFileNames();
-        if (names.Count == 0)
-        {
-            await DisplayAlertAsync("Відкриття", $"У папці {localFiles.FolderPath} ще немає збережених таблиць.", "OK");
-            return;
-        }
-
-        string? choice = await DisplayActionSheetAsync("Оберіть таблицю", "Скасувати", null, names.ToArray());
-        if (choice == null || !names.Contains(choice))
-            return;
-
         try
         {
-            LoadTable(TableSerializer.FromJson(localFiles.Load(choice)), choice);
-            StatusLabel.Text = $"Відкрито таблицю «{choice}».";
+            LocalTableFile? file = await localFiles.PickAndReadAsync();
+            if (file == null)
+                return;   // користувач закрив вікно вибору файлу
+
+            LoadTable(TableSerializer.FromJson(file.Content), file.Name);
+            StatusLabel.Text = $"Відкрито таблицю: {file.FullPath}";
         }
         catch (Exception ex)
         {
@@ -556,6 +549,8 @@ public partial class MainPage : ContentPage
             "• «Тема: Світла / Темна» змінює оформлення програми (вибір запам'ятовується).\n" +
             "• Група «Таблиця» — зміна кількості рядків і стовпчиків, група «Файл» — " +
             "створення, відкриття та збереження таблиць (на комп'ютері або на Google Drive).\n" +
+            "• «Відкрити з комп'ютера» дозволяє вибрати файл таблиці (.json) у будь-якій папці; " +
+            "«Зберегти на комп'ютер» записує таблицю в папку Документи\\Lab1Tables.\n" +
             "• Помилкові клітинки показують #ПОМИЛКА, опис помилки — у рядку стану внизу.\n\n" +
             "ЩО МОЖНА ПИСАТИ У ВИРАЗІ\n" +
             "• Цілі невід'ємні числа будь-якої довжини: 7, 123456789012345678901234567890\n" +

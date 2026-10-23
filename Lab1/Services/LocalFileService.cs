@@ -1,7 +1,12 @@
 namespace Lab1.Services;
 
+/// <summary>Таблиця, прочитана з файлу на комп'ютері.</summary>
+public record LocalTableFile(string Name, string FullPath, string Content);
+
 /// <summary>
-/// Збереження таблиць у локальну папку "Документи\Lab1Tables".
+/// Робота з таблицями на комп'ютері:
+/// збереження — у папку "Документи\Lab1Tables",
+/// відкриття — файлу .json з будь-якої папки (через стандартне вікно вибору файлу).
 /// </summary>
 public class LocalFileService
 {
@@ -17,22 +22,27 @@ public class LocalFileService
         return path;
     }
 
-    public string Load(string name)
+    /// <summary>
+    /// Показує стандартне вікно вибору файлу (.json) і читає вибраний файл.
+    /// Повертає null, якщо користувач нічого не вибрав.
+    /// </summary>
+    public async Task<LocalTableFile?> PickAndReadAsync()
     {
-        return File.ReadAllText(Path.Combine(FolderPath, name + ".json"));
-    }
+        var jsonFiles = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+        {
+            { DevicePlatform.WinUI, new[] { ".json" } }
+        });
 
-    /// <summary>Назви (без .json) усіх збережених таблиць.</summary>
-    public List<string> GetFileNames()
-    {
-        var names = new List<string>();
-        if (!Directory.Exists(FolderPath))
-            return names;
+        FileResult? file = await FilePicker.Default.PickAsync(new PickOptions
+        {
+            PickerTitle = "Відкрити таблицю",
+            FileTypes = jsonFiles
+        });
 
-        foreach (string path in Directory.GetFiles(FolderPath, "*.json"))
-            names.Add(Path.GetFileNameWithoutExtension(path));
+        if (file == null)
+            return null;
 
-        names.Sort();
-        return names;
+        string content = await File.ReadAllTextAsync(file.FullPath);
+        return new LocalTableFile(Path.GetFileNameWithoutExtension(file.FileName), file.FullPath, content);
     }
 }
