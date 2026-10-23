@@ -4,40 +4,110 @@
              x:Class="Lab1.MainPage"
              BackgroundColor="White">
 
+    <ContentPage.Resources>
+        <!-- Рамка навколо групи кнопок -->
+        <Style x:Key="GroupBorder" TargetType="Border">
+            <Setter Property="Stroke" Value="#C8C8C8" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 6" />
+            <Setter Property="Padding" Value="6,2,6,4" />
+            <Setter Property="Margin" Value="0,0,8,6" />
+        </Style>
+
+        <!-- Підпис групи кнопок -->
+        <Style x:Key="GroupCaption" TargetType="Label">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="#5F6368" />
+            <Setter Property="Margin" Value="3,2,0,0" />
+        </Style>
+
+        <!-- Вертикальна риска між підгрупами -->
+        <Style x:Key="GroupSeparator" TargetType="BoxView">
+            <Setter Property="WidthRequest" Value="1" />
+            <Setter Property="Color" Value="#C8C8C8" />
+            <Setter Property="Margin" Value="6,4" />
+        </Style>
+    </ContentPage.Resources>
+
     <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="10" RowSpacing="8">
 
-        <!-- Панель кнопок -->
-        <FlexLayout x:Name="ButtonsPanel" Grid.Row="0" Wrap="Wrap" AlignItems="Center">
-            <Button Text="Нова" Clicked="New_Clicked" ToolTipProperties.Text="Створити нову порожню таблицю" />
-            <Button Text="Відкрити" Clicked="OpenLocal_Clicked" ToolTipProperties.Text="Відкрити таблицю з папки Документи\Lab1Tables" />
-            <Button Text="Зберегти" Clicked="SaveLocal_Clicked" ToolTipProperties.Text="Зберегти таблицю в папку Документи\Lab1Tables" />
-            <Button Text="Відкрити з Google Drive" Clicked="OpenDrive_Clicked" BackgroundColor="#1A73E8" />
-            <Button Text="Зберегти на Google Drive" Clicked="SaveDrive_Clicked" BackgroundColor="#1A73E8" />
-            <Button Text="Вийти з Google" Clicked="SignOut_Clicked" BackgroundColor="#5F6368" />
+        <!-- Панель кнопок: три групи — «Таблиця», «Файл», «Довідка» -->
+        <FlexLayout x:Name="ButtonsPanel" Grid.Row="0" Wrap="Wrap" AlignItems="Start">
 
-            <BoxView WidthRequest="12" HeightRequest="1" Color="Transparent" />
+            <!-- ТАБЛИЦЯ: розмір і режим відображення -->
+            <Border Style="{StaticResource GroupBorder}">
+                <VerticalStackLayout>
+                    <Label Text="ТАБЛИЦЯ" Style="{StaticResource GroupCaption}" />
+                    <HorizontalStackLayout>
+                        <Button Text="Додати рядок" Clicked="AddRow_Clicked"
+                                ToolTipProperties.Text="Додати порожній рядок у кінець таблиці" />
+                        <Button Text="Видалити рядок" Clicked="RemoveRow_Clicked"
+                                ToolTipProperties.Text="Видалити останній рядок таблиці" />
+                        <Button Text="Додати стовпчик" Clicked="AddColumn_Clicked"
+                                ToolTipProperties.Text="Додати порожній стовпчик у кінець таблиці" />
+                        <Button Text="Видалити стовпчик" Clicked="RemoveColumn_Clicked"
+                                ToolTipProperties.Text="Видалити останній стовпчик таблиці" />
 
-            <Button Text="+ Рядок" Clicked="AddRow_Clicked" />
-            <Button Text="− Рядок" Clicked="RemoveRow_Clicked" />
-            <Button Text="+ Стовпчик" Clicked="AddColumn_Clicked" />
-            <Button Text="− Стовпчик" Clicked="RemoveColumn_Clicked" />
+                        <BoxView Style="{StaticResource GroupSeparator}" />
 
-            <BoxView WidthRequest="12" HeightRequest="1" Color="Transparent" />
+                        <Label Text="Показувати:" VerticalOptions="Center" Margin="3,0" TextColor="#333333" />
+                        <Button x:Name="ValuesModeButton" Text="Значення" Clicked="ValuesMode_Clicked"
+                                ToolTipProperties.Text="Режим ЗНАЧЕННЯ: у клітинках показуються обчислені значення" />
+                        <Button x:Name="ExpressionsModeButton" Text="Вирази" Clicked="ExpressionsMode_Clicked"
+                                ToolTipProperties.Text="Режим ВИРАЗ: у клітинках показуються вирази, їх можна редагувати" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
 
-            <Button x:Name="ModeButton" Text="Режим: ЗНАЧЕННЯ" Clicked="Mode_Clicked" BackgroundColor="#B26A00"
-                    ToolTipProperties.Text="Перемкнути відображення: вирази / значення" />
-            <Button Text="Довідка" Clicked="Help_Clicked" BackgroundColor="#5F6368" />
-            <Button Text="Про програму" Clicked="About_Clicked" BackgroundColor="#5F6368" />
+            <!-- ФАЙЛ: на комп'ютері та на Google Drive -->
+            <Border Style="{StaticResource GroupBorder}">
+                <VerticalStackLayout>
+                    <Label Text="ФАЙЛ" Style="{StaticResource GroupCaption}" />
+                    <HorizontalStackLayout>
+                        <Button Text="Нова таблиця" Clicked="New_Clicked"
+                                ToolTipProperties.Text="Створити нову порожню таблицю" />
+                        <Button Text="Відкрити з комп'ютера" Clicked="OpenLocal_Clicked"
+                                ToolTipProperties.Text="Відкрити таблицю з папки Документи\Lab1Tables" />
+                        <Button Text="Зберегти на комп'ютер" Clicked="SaveLocal_Clicked"
+                                ToolTipProperties.Text="Зберегти таблицю в папку Документи\Lab1Tables" />
+
+                        <BoxView Style="{StaticResource GroupSeparator}" />
+
+                        <Button Text="Відкрити з Google Drive" Clicked="OpenDrive_Clicked" BackgroundColor="#1A73E8"
+                                ToolTipProperties.Text="Відкрити таблицю, раніше збережену цією програмою на Google Drive" />
+                        <Button Text="Зберегти на Google Drive" Clicked="SaveDrive_Clicked" BackgroundColor="#1A73E8"
+                                ToolTipProperties.Text="Зберегти таблицю на ваш Google Drive" />
+                        <Button Text="Вийти з Google-акаунта" Clicked="SignOut_Clicked" BackgroundColor="#5F6368"
+                                ToolTipProperties.Text="Забути збережений вхід у Google-акаунт" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ДОВІДКА -->
+            <Border Style="{StaticResource GroupBorder}">
+                <VerticalStackLayout>
+                    <Label Text="ДОВІДКА" Style="{StaticResource GroupCaption}" />
+                    <HorizontalStackLayout>
+                        <Button Text="Як користуватися" Clicked="Help_Clicked" BackgroundColor="#5F6368"
+                                ToolTipProperties.Text="Як вводити вирази, які операції підтримуються, приклади" />
+                        <Button Text="Про програму" Clicked="About_Clicked" BackgroundColor="#5F6368"
+                                ToolTipProperties.Text="Коротка інформація про програму" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
         </FlexLayout>
 
         <!-- Рядок виразу вибраної клітинки -->
         <Grid Grid.Row="1" ColumnDefinitions="70,*,Auto" ColumnSpacing="6">
             <Label x:Name="CellNameLabel" Text="A1" FontSize="16" FontAttributes="Bold"
-                   HorizontalOptions="Center" VerticalOptions="Center" TextColor="#1F6E43" />
+                   HorizontalOptions="Center" VerticalOptions="Center" TextColor="#1F6E43"
+                   ToolTipProperties.Text="Вибрана клітинка" />
             <Entry x:Name="FormulaEntry" Grid.Column="1"
                    Placeholder="Вираз для вибраної клітинки, наприклад: (A1 > 2^10) and not (B2 = 0)"
                    Completed="FormulaEntry_Completed" />
-            <Button Grid.Column="2" Text="Застосувати" Clicked="FormulaEntry_Completed" />
+            <Button Grid.Column="2" Text="Застосувати вираз" Clicked="FormulaEntry_Completed"
+                    ToolTipProperties.Text="Записати вираз у вибрану клітинку (або натисніть Enter)" />
         </Grid>
 
         <!-- Сама таблиця (заповнюється з коду) -->

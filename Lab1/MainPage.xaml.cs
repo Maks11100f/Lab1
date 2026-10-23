@@ -17,6 +17,8 @@ public partial class MainPage : ContentPage
     private static readonly Color CellColor = Colors.White;
     private static readonly Color SelectedCellColor = Color.FromArgb("#FFF4C2");
     private static readonly Color ErrorTextColor = Color.FromArgb("#C62828");
+    private static readonly Color ActiveModeColor = Color.FromArgb("#B26A00");
+    private static readonly Color InactiveModeColor = Color.FromArgb("#E8E8E8");
 
     /// <summary>Поточна сторінка (потрібна для питання при закритті вікна).</summary>
     public static MainPage? Current { get; private set; }
@@ -39,6 +41,7 @@ public partial class MainPage : ContentPage
         Current = this;
         BuildGrid();
         SelectCell(0, 0);
+        UpdateModeButtons();
     }
 
     // =====================================================================
@@ -195,11 +198,31 @@ public partial class MainPage : ContentPage
         ShowSelectedCellInfo();
     }
 
-    private void Mode_Clicked(object? sender, EventArgs e)
+    private void ValuesMode_Clicked(object? sender, EventArgs e) => SetDisplayMode(false);
+
+    private void ExpressionsMode_Clicked(object? sender, EventArgs e) => SetDisplayMode(true);
+
+    /// <summary>Перемикає режим відображення: ЗНАЧЕННЯ (false) або ВИРАЗ (true).</summary>
+    private void SetDisplayMode(bool expressions)
     {
-        showExpressions = !showExpressions;
-        ModeButton.Text = showExpressions ? "Режим: ВИРАЗ" : "Режим: ЗНАЧЕННЯ";
+        if (showExpressions == expressions)
+            return;
+
+        showExpressions = expressions;
+        UpdateModeButtons();
         RefreshCells();
+        StatusLabel.Text = showExpressions
+            ? "Режим ВИРАЗ: у клітинках показано вирази, їх можна редагувати."
+            : "Режим ЗНАЧЕННЯ: у клітинках показано обчислені значення.";
+    }
+
+    /// <summary>Підсвічує кнопку поточного режиму.</summary>
+    private void UpdateModeButtons()
+    {
+        ValuesModeButton.BackgroundColor = showExpressions ? InactiveModeColor : ActiveModeColor;
+        ValuesModeButton.TextColor = showExpressions ? Colors.Black : Colors.White;
+        ExpressionsModeButton.BackgroundColor = showExpressions ? ActiveModeColor : InactiveModeColor;
+        ExpressionsModeButton.TextColor = showExpressions ? Colors.White : Colors.Black;
     }
 
     // =====================================================================
@@ -457,9 +480,11 @@ public partial class MainPage : ContentPage
     {
         const string help =
             "ЯК КОРИСТУВАТИСЯ\n" +
-            "• Виберіть клітинку і введіть вираз у рядку зверху, потім Enter або «Застосувати».\n" +
+            "• Виберіть клітинку і введіть вираз у рядку над таблицею, потім Enter або «Застосувати вираз».\n" +
             "• У режимі ВИРАЗ можна писати вирази прямо в клітинках.\n" +
-            "• Кнопка режиму перемикає показ виразів / значень.\n" +
+            "• «Показувати: Значення / Вирази» перемикає режим відображення таблиці.\n" +
+            "• Група «Таблиця» — зміна кількості рядків і стовпчиків, група «Файл» — " +
+            "створення, відкриття та збереження таблиць (на комп'ютері або на Google Drive).\n" +
             "• Помилкові клітинки показують #ПОМИЛКА, опис помилки — у рядку стану внизу.\n\n" +
             "ЩО МОЖНА ПИСАТИ У ВИРАЗІ\n" +
             "• Цілі невід'ємні числа будь-якої довжини: 7, 123456789012345678901234567890\n" +
