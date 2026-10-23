@@ -104,12 +104,21 @@ public class GoogleDriveService
         return Encoding.UTF8.GetString(stream.ToArray());
     }
 
-    /// <summary>Забуває збережений вхід (наступного разу знову відкриється браузер).</summary>
-    public void SignOut()
+    /// <summary>Чи збережено вхід у Google-акаунт (є токен на диску).</summary>
+    public bool IsSignedIn =>
+        Directory.Exists(TokenFolder) && Directory.EnumerateFiles(TokenFolder).Any();
+
+    /// <summary>
+    /// Забуває збережений вхід (наступного разу знову відкриється браузер).
+    /// Повертає false, якщо вхід і так не було виконано.
+    /// </summary>
+    public bool SignOut()
     {
+        bool wasSignedIn = IsSignedIn;
         service = null;
         if (Directory.Exists(TokenFolder))
             Directory.Delete(TokenFolder, true);
+        return wasSignedIn;
     }
 
     /// <summary>Створює підключення до Drive (один раз за сеанс роботи програми).</summary>

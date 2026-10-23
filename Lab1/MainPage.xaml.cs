@@ -416,8 +416,21 @@ public partial class MainPage : ContentPage
     {
         try
         {
-            googleDrive.SignOut();
-            StatusLabel.Text = "Вхід у Google скасовано. Наступного разу програма попросить увійти знову.";
+            if (googleDrive.SignOut())
+            {
+                StatusLabel.Text = "Ви вийшли з Google-акаунта.";
+                await DisplayAlertAsync("Google Drive",
+                    "Ви вийшли з Google-акаунта.\n" +
+                    "Під час наступного звернення до Google Drive програма знову відкриє браузер для входу.",
+                    "OK");
+            }
+            else
+            {
+                StatusLabel.Text = "Вхід у Google-акаунт не виконано.";
+                await DisplayAlertAsync("Google Drive",
+                    "Ви ще не входили в Google-акаунт у цій програмі, тому виходити не потрібно.",
+                    "OK");
+            }
         }
         catch (Exception ex)
         {
