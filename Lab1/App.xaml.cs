@@ -14,7 +14,10 @@ public partial class App : Application
     {
         return new Window(new MainPage())
         {
-            Title = "Електронна таблиця — Лабораторна робота №1 (варіант 73)"
+            Title = MainPage.AppTitle,
+            // Менше вікно не дозволяємо, щоб групи кнопок на панелі не обрізалися
+            MinimumWidth = 1120,
+            MinimumHeight = 600
         };
     }
 }

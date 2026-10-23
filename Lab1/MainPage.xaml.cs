@@ -18,7 +18,21 @@ public partial class MainPage : ContentPage
     /// <summary>Поточна сторінка (потрібна для питання при закритті вікна).</summary>
     public static MainPage? Current { get; private set; }
 
-    public bool HasUnsavedChanges { get; set; }
+    /// <summary>Назва програми в заголовку вікна (перед нею — назва відкритої таблиці).</summary>
+    public const string AppTitle = "Електронна таблиця — Лабораторна робота №1 (варіант 73)";
+
+    private bool hasUnsavedChanges;
+
+    /// <summary>Чи є незбережені зміни (позначаються зірочкою в заголовку вікна).</summary>
+    public bool HasUnsavedChanges
+    {
+        get => hasUnsavedChanges;
+        set
+        {
+            hasUnsavedChanges = value;
+            UpdateWindowTitle();
+        }
+    }
 
     private readonly LocalFileService localFiles = new();
     private readonly GoogleDriveService googleDrive = new();
@@ -42,6 +56,14 @@ public partial class MainPage : ContentPage
         SelectCell(0, 0);
         UpdateModeButtons();
         UpdateThemeButtons();
+        Loaded += (sender, e) => UpdateWindowTitle();   // вікно стає доступним лише після завантаження сторінки
+    }
+
+    /// <summary>Заголовок вікна: «назва таблиці* — назва програми» (зірочка — є незбережені зміни).</summary>
+    private void UpdateWindowTitle()
+    {
+        if (Window != null)
+            Window.Title = $"{fileName}{(hasUnsavedChanges ? "*" : "")} — {AppTitle}";
     }
 
     // =====================================================================
