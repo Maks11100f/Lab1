@@ -13,9 +13,13 @@ public partial class MainPage : ContentPage
     private const int DefaultRows = 10;
     private const int DefaultColumns = 6;
 
-    private static readonly Color HeaderColor = Color.FromArgb("#E3EFE7");
+    // Кольори таблиці (у стилі Excel: світло-сірі заголовки, зелена рамка вибраної клітинки)
+    private static readonly Color HeaderColor = Color.FromArgb("#F3F3F3");
+    private static readonly Color HeaderTextColor = Color.FromArgb("#333333");
+    private static readonly Color SelectedHeaderColor = Color.FromArgb("#D2E6D9");
+    private static readonly Color SelectedHeaderTextColor = Color.FromArgb("#1F6E43");
     private static readonly Color CellColor = Colors.White;
-    private static readonly Color SelectedCellColor = Color.FromArgb("#FFF4C2");
+    private static readonly Color SelectionBorderColor = Color.FromArgb("#1F6E43");
     private static readonly Color ErrorTextColor = Color.FromArgb("#C62828");
     private static readonly Color ActiveModeColor = Color.FromArgb("#B26A00");
     private static readonly Color InactiveModeColor = Color.FromArgb("#E8E8E8");
@@ -29,7 +33,10 @@ public partial class MainPage : ContentPage
     private readonly GoogleDriveService googleDrive = new();
 
     private Table table = new(DefaultRows, DefaultColumns);
-    private Entry[,] cellEntries = new Entry[0, 0];
+    private CellEntry[,] cellEntries = new CellEntry[0, 0];
+    private Border[,] cellBorders = new Border[0, 0];     // рамка навколо клітинки (видима лише у вибраної)
+    private Label[] rowHeaders = Array.Empty<Label>();
+    private Label[] columnHeaders = Array.Empty<Label>();
     private int selectedRow;
     private int selectedColumn;
     private bool showExpressions;          // false — режим ЗНАЧЕННЯ, true — режим ВИРАЗ
@@ -57,7 +64,10 @@ public partial class MainPage : ContentPage
 
         int rows = table.RowCount;
         int columns = table.ColumnCount;
-        cellEntries = new Entry[rows, columns];
+        cellEntries = new CellEntry[rows, columns];
+        cellBorders = new Border[rows, columns];
+        rowHeaders = new Label[rows];
+        columnHeaders = new Label[columns];
 
         TableGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(50)));
         for (int c = 0; c < columns; c++)
@@ -69,17 +79,33 @@ public partial class MainPage : ContentPage
         // Лівий верхній кут і заголовки стовпчиків
         TableGrid.Add(CreateHeader(""), 0, 0);
         for (int c = 0; c < columns; c++)
-            TableGrid.Add(CreateHeader(CellAddress.ColumnName(c)), c + 1, 0);
+        {
+            columnHeaders[c] = CreateHeader(CellAddress.ColumnName(c));
+            TableGrid.Add(columnHeaders[c], c + 1, 0);
+        }
 
         for (int r = 0; r < rows; r++)
         {
-            TableGrid.Add(CreateHeader((r + 1).ToString()), 0, r + 1);
+            rowHeaders[r] = CreateHeader((r + 1).ToString());
+            TableGrid.Add(rowHeaders[r], 0, r + 1);
 
             for (int c = 0; c < columns; c++)
             {
-                Entry entry = CreateCellEntry(r, c);
+                CellEntry entry = CreateCellEntry(r, c);
+                var border = new Border
+                {
+                    // Прямокутна рамка без заокруглень; прозора, доки клітинку не вибрано
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.Rectangle(),
+                    StrokeThickness = 2,
+                    Stroke = Colors.Transparent,
+                    BackgroundColor = CellColor,
+                    Padding = 0,
+                    Content = entry
+                };
+
                 cellEntries[r, c] = entry;
-                TableGrid.Add(entry, c + 1, r + 1);
+                cellBorders[r, c] = border;
+                TableGrid.Add(border, c + 1, r + 1);
             }
         }
 
@@ -93,19 +119,19 @@ public partial class MainPage : ContentPage
             Text = text,
             FontAttributes = FontAttributes.Bold,
             BackgroundColor = HeaderColor,
-            TextColor = Colors.Black,
+            TextColor = HeaderTextColor,
             HorizontalTextAlignment = TextAlignment.Center,
             VerticalTextAlignment = TextAlignment.Center,
             Padding = new Thickness(4, 6)
         };
     }
 
-    private Entry CreateCellEntry(int row, int column)
+    private CellEntry CreateCellEntry(int row, int column)
     {
-        var entry = new Entry
+        var entry = new CellEntry
         {
             FontSize = 14,
-            BackgroundColor = CellColor
+            BackgroundColor = Colors.Transparent    // фон дає рамка-контейнер клітинки
         };
 
         entry.Focused += (sender, e) => SelectCell(row, column);
@@ -122,13 +148,29 @@ public partial class MainPage : ContentPage
             for (int c = 0; c < table.ColumnCount; c++)
             {
                 TableCell cell = table.GetCell(r, c);
-                Entry entry = cellEntries[r, c];
+                CellEntry entry = cellEntries[r, c];
 
                 entry.Text = showExpressions ? cell.Expression : cell.ValueText;
                 entry.IsReadOnly = !showExpressions;
                 entry.TextColor = cell.HasError ? ErrorTextColor : Colors.Black;
-                entry.BackgroundColor = (r == selectedRow && c == selectedColumn) ? SelectedCellColor : CellColor;
+                // Як в Excel: значення вирівняні праворуч, вирази — ліворуч
+                entry.HorizontalTextAlignment = showExpressions ? TextAlignment.Start : TextAlignment.End;
             }
+        }
+    }
+
+    /// <summary>Показує або прибирає виділення клітинки (рамка + підсвічені заголовки рядка і стовпчика).</summary>
+    private void SetCellHighlight(int row, int column, bool selected)
+    {
+        if (row >= table.RowCount || column >= table.ColumnCount)
+            return;
+
+        cellBorders[row, column].Stroke = selected ? SelectionBorderColor : Colors.Transparent;
+
+        foreach (Label header in new[] { rowHeaders[row], columnHeaders[column] })
+        {
+            header.BackgroundColor = selected ? SelectedHeaderColor : HeaderColor;
+            header.TextColor = selected ? SelectedHeaderTextColor : HeaderTextColor;
         }
     }
 
@@ -138,12 +180,11 @@ public partial class MainPage : ContentPage
 
     private void SelectCell(int row, int column)
     {
-        if (selectedRow < table.RowCount && selectedColumn < table.ColumnCount)
-            cellEntries[selectedRow, selectedColumn].BackgroundColor = CellColor;
+        SetCellHighlight(selectedRow, selectedColumn, false);
 
         selectedRow = row;
         selectedColumn = column;
-        cellEntries[row, column].BackgroundColor = SelectedCellColor;
+        SetCellHighlight(row, column, true);
 
         CellNameLabel.Text = CellAddress.GetName(row, column);
         FormulaEntry.Text = table.GetExpression(row, column);
