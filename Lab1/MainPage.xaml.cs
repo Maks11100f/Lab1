@@ -387,14 +387,13 @@ public partial class MainPage : ContentPage
 
     private async void SaveLocal_Clicked(object? sender, EventArgs e)
     {
-        string? name = await AskFileNameAsync();
-        if (name == null)
-            return;
-
         try
         {
-            string path = localFiles.Save(name, TableSerializer.ToJson(table));
-            MarkAsSaved(name);
+            string? path = await localFiles.SaveAsAsync(fileName, TableSerializer.ToJson(table));
+            if (path == null)
+                return;   // користувач закрив вікно «Зберегти як»
+
+            MarkAsSaved(Path.GetFileNameWithoutExtension(path));
             StatusLabel.Text = $"Таблицю збережено: {path}";
         }
         catch (Exception ex)
@@ -549,8 +548,8 @@ public partial class MainPage : ContentPage
             "• «Тема: Світла / Темна» змінює оформлення програми (вибір запам'ятовується).\n" +
             "• Група «Таблиця» — зміна кількості рядків і стовпчиків, група «Файл» — " +
             "створення, відкриття та збереження таблиць (на комп'ютері або на Google Drive).\n" +
-            "• «Відкрити з комп'ютера» дозволяє вибрати файл таблиці (.json) у будь-якій папці; " +
-            "«Зберегти на комп'ютер» записує таблицю в папку Документи\\Lab1Tables.\n" +
+            "• «Відкрити з комп'ютера» і «Зберегти на комп'ютер» відкривають стандартні вікна Windows, " +
+            "де можна вибрати будь-яку папку та назву файлу (.json).\n" +
             "• Помилкові клітинки показують #ПОМИЛКА, опис помилки — у рядку стану внизу.\n\n" +
             "ЩО МОЖНА ПИСАТИ У ВИРАЗІ\n" +
             "• Цілі невід'ємні числа будь-якої довжини: 7, 123456789012345678901234567890\n" +

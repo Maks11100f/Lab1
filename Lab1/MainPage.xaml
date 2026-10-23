@@ -72,7 +72,7 @@
                         <Button Text="Відкрити з комп'ютера" Clicked="OpenLocal_Clicked"
                                 ToolTipProperties.Text="Вибрати файл таблиці (.json) у будь-якій папці комп'ютера" />
                         <Button Text="Зберегти на комп'ютер" Clicked="SaveLocal_Clicked"
-                                ToolTipProperties.Text="Зберегти таблицю в папку Документи\Lab1Tables" />
+                                ToolTipProperties.Text="Вибрати папку й назву файлу та зберегти таблицю (.json)" />
 
                         <BoxView Style="{StaticResource GroupSeparator}" />
 
