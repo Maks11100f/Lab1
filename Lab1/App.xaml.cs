@@ -14,7 +14,7 @@ public partial class App : Application
     {
         return new Window(new MainPage())
         {
-            Title = MainPage.AppTitle,
+            Title = Lab1.MainPage.AppTitle,   // повне ім'я: у класі App «MainPage» — це властивість Application
             // Менше вікно не дозволяємо, щоб групи кнопок на панелі не обрізалися
             MinimumWidth = 1120,
             MinimumHeight = 600
