@@ -24,37 +24,6 @@
 
 Завдання з зірочкою: збереження та зчитування таблиць з **Google Drive** (через Google Drive API v3, власний формат JSON).
 
-## Як запустити
-
-1. Відкрити `Lab1.sln` у Visual Studio 2026 (потрібне навантаження **.NET MAUI**).
-2. Стартовий проєкт — `Lab1`, ціль запуску — **Windows Machine**.
-3. F5. Під час першої збірки NuGet завантажить пакети `Microsoft.Maui.Controls` і `Google.Apis.Drive.v3`.
-
-Тести: **Test → Run All Tests** (проєкт `Lab1.Tests`, xUnit).
-
-## Налаштування Google Drive (один раз)
-
-Програмі потрібен OAuth-клієнт Google. Це безкоштовно:
-
-1. Зайти на <https://console.cloud.google.com/> → створити проєкт (наприклад, `Lab1Spreadsheet`).
-2. **APIs & Services → Library** → знайти **Google Drive API** → **Enable**.
-3. **APIs & Services → OAuth consent screen** (або **Google Auth Platform**): тип **External**, вказати назву
-   застосунку та свою пошту. У розділі **Audience / Test users** додати свою Google-адресу
-   (поки застосунок у режимі *Testing*, увійти можуть лише тестові користувачі).
-4. **APIs & Services → Credentials → Create credentials → OAuth client ID**, тип **Desktop app**.
-5. Завантажити JSON-файл клієнта, перейменувати на **`credentials.json`** і покласти в папку
-   `Lab1/Resources/Raw/`. Перезібрати проєкт.
-
-Під час першого натискання «Зберегти на Google Drive» / «Відкрити з Google Drive» відкриється браузер
-для входу в акаунт. Google попередить, що застосунок не перевірений — це нормально для навчального
-проєкту (**Continue**). Токен зберігається локально, тож наступного разу вхід не потрібен.
-Кнопка «Вийти з Google» видаляє збережений токен.
-
-Програма використовує дозвіл `drive.file` — вона бачить **лише ті файли, які створила сама**,
-решта вмісту Google Drive їй недоступна.
-
-> `credentials.json` не варто викладати у відкритий репозиторій — він доданий у `.gitignore`.
-
 ## Синтаксис виразів (БНФ)
 
 ```
@@ -115,29 +84,3 @@
 На комп'ютері таблицю можна зберегти в будь-яку папку і відкрити з будь-якої папки — через стандартні
 вікна Windows «Зберегти як» / «Відкрити». На Google Drive таблиці зберігаються в корені диска.
 
-## Структура рішення
-
-```
-Lab1.sln
-├── Lab1/                        — застосунок .NET MAUI
-│   ├── Logic/                   — логіка (не залежить від інтерфейсу)
-│   │   ├── Token.cs             — лексема
-│   │   ├── Lexer.cs             — лексичний аналіз
-│   │   ├── Parser.cs            — синтаксичний аналіз (рекурсивний спуск)
-│   │   ├── Nodes.cs             — дерево виразу та обчислення
-│   │   ├── Exceptions.cs        — ParseException, CalculationException
-│   │   ├── CellAddress.cs       — A1 <-> (рядок, стовпчик)
-│   │   ├── TableCell.cs         — клітинка
-│   │   ├── Table.cs             — таблиця, перерахунок, пошук циклів
-│   │   └── TableSerializer.cs   — збереження / зчитування JSON
-│   ├── Services/
-│   │   ├── LocalFileService.cs  — файли на комп'ютері
-│   │   └── GoogleDriveService.cs— Google Drive API
-│   ├── MainPage.xaml(.cs)       — головне вікно
-│   ├── App.xaml(.cs), MauiProgram.cs
-│   └── Resources/Raw/           — сюди кладеться credentials.json
-└── Lab1.Tests/                  — модульні тести xUnit
-```
-
-Обробники кнопок лише викликають методи класів `Table`, `TableSerializer`, `LocalFileService`,
-`GoogleDriveService` — логіку винесено з інтерфейсу (без антишаблону «магічна кнопка»).
